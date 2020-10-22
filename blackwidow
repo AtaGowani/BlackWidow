@@ -3,6 +3,8 @@
 # https://xerosecurity.com
 #
 
+import time
+from os import curdir
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import requests, sys, os, atexit, optparse
@@ -38,6 +40,7 @@ def readlinks (url):
   urls_saved = open(save_dir + domain + "_" + port + "-urls.txt","a")
   forms_saved = open(save_dir + domain + "_" + port + "-forms.txt","a")
   dynamic_saved = open(save_dir + domain + "_" + port + "-dynamic.txt","a")
+  external_saved = open(save_dir + domain + "_" + port + "-external.txt","a")
   emails_saved = open(save_dir + domain + "_" + port + "-emails.txt","a")
   phones_saved = open(save_dir + domain + "_" + port + "-phones.txt","a")
   subdomains_saved = open(save_dir + domain + "_" + port + "-subdomains.txt","a")
@@ -78,12 +81,14 @@ def readlinks (url):
             urls.write(link.get('href') + "\n")
             urls_saved.write(link.get('href') + "\n")
         # EXTERNAL LINK FOUND
-        #else:
+        else:
+          external_saved.write(link.get('href') + "\n")
+          print (COLOR2 + "[i] External link found! " + link.get('href') + " " + RESET)
         # IF URL IS DYNAMIC
-        #if "?" in link.get('href'):
-        #print (COLOR2 + "[+] External Dynamic URL found! " + link.get('href') + " " + RESET)
-        #else:
-        #print (COLOR2 + "[i] External link found! " + link.get('href') + " " + RESET)
+        # if "?" in link.get('href'):
+        #   print (COLOR2 + "[+] External Dynamic URL found! " + link.get('href') + " " + RESET)
+        # else:
+        #   print (COLOR2 + "[i] External link found! " + link.get('href') + " " + RESET)
       # IF URL IS DYNAMIC
       elif "?" in link.get('href'):
         print (OKRED + "[+] Dynamic URL found! " + url + "/" + link.get('href') + " " + RESET)
@@ -186,6 +191,8 @@ def exit_handler():
   print (OKRED + "__________________________________________________________________________________________________" + RESET)
   print (RESET)
 
+  print("Finished in " + str(time_elapsed) + " seconds")
+
   os.system('rm -f ' + save_dir + domain + "_" + port + '-dynamic.txt')
   os.system('rm -f ' + save_dir + domain + "_" + port + '-forms.txt')
   os.system('rm -f ' + save_dir + domain + "_" + port + '-emails.txt')
@@ -274,7 +281,7 @@ else:
     else:
       port = port
 
-  save_dir = "/usr/share/blackwidow/" + domain + "_" + port + "/"
+  save_dir = curdir + "/output/" + domain + "_" + port + "/"
   os.system('mkdir -p ' + save_dir + ' 2>/dev/null')
   atexit.register(exit_handler)
 
@@ -299,7 +306,8 @@ else:
   phones = open(phones_file,"w+")
   phones.close()
 
-
+  print("STARTING SCAN")
+  start = time.time()
   try:
     readlinks(url)
   except Exception as ex:
@@ -314,3 +322,7 @@ else:
         print(ex)
     else:
       break
+  end = time.time()
+  print("FINISHED SCAN")
+
+  time_elapsed = end - start
